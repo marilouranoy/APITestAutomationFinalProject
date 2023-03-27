@@ -9,10 +9,9 @@ namespace HTTPClientTests.Resources
         public static string GetURL(string endpoint) => $"{BaseURL}{endpoint}";
         public static Uri GetURI(string endpoint) => new Uri(GetURL(endpoint));
 
-        public static string GetBookingById(int bookingId) => $"{BaseURL}{BookingEndpoint}/{bookingId}";
+        public static string GetBookingById(int bookingId) => $"{BookingEndpoint}/{bookingId}";
+        public static string UpdateBookingDataById(int bookingId) => $"{BookingEndpoint}/{bookingId}";
+        public static string DeleteBookingDataById(int bookingId) => $"{BookingEndpoint}/{bookingId}";
 
-        public static string PostPet() => $"{BaseURL}/{BookingEndpoint}";
-
-        public static string DeletePetById(long petId) => $"{BaseURL}/{BookingEndpoint}/{petId}";
     }
 }

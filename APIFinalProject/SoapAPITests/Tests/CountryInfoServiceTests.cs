@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+[assembly: Parallelize(Workers = 10, Scope = ExecutionScope.MethodLevel)]
 namespace SoapAPITests.Tests
 {
     [TestClass]
@@ -26,8 +27,8 @@ namespace SoapAPITests.Tests
         /// Test method TestFullCountryInfo
         /// - 
         /// </summary>
-        [TestCategory("SOAP API Tests")]
         [TestMethod]
+        [TestCategory("SOAP API Tests")]
         public void TestFullCountryInfo()
         {
             ServiceReference1.tCountryCodeAndName[] listCountryCodeAndNames = GetListOfCountryNamesByCode();
@@ -44,8 +45,8 @@ namespace SoapAPITests.Tests
             //CollectionAssert.AreEqual(sortedListCountryCodes.ToList(), returnListCountryCodes.ToList());
         }
 
-        [TestCategory("SOAP API Tests")]
         [TestMethod]
+        [TestCategory("SOAP API Tests")]
         public void TestCountryISOCode()
         {
             ServiceReference1.tCountryCodeAndName returnRandomRecord;

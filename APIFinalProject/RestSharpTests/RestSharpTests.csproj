@@ -13,13 +13,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DataModels\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Resources\" />
-    <Folder Include="Tests\TestData\" />
+    <PackageReference Include="RestSharp" Version="109.0.1" />
   </ItemGroup>
 
 </Project>

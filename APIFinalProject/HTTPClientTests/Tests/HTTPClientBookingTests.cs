@@ -13,32 +13,15 @@ namespace HTTPClientTests.Tests
     [TestClass]
     public class HTTPClientBookingTests : APIBaseTests
     {
-        [TestCategory("HTTP Client Tests")]
         [TestMethod]
-        public async Task TestPostBooking()
+        [TestCategory("HTTP Client Tests")]
+        public async Task TestCreateBooking()
         {
-            /*
-            #region get token data
-            // Initialize Request
-            var authenticationURL = "https://restful-booker.herokuapp.com/auth";
-            var authenticationData = "{\"username\":\"admin\",\"password\":\"password123\"}";
-
-            // Send Post Request
-            var httpRequest = JsonConvert.SerializeObject(newBookingData);
-            var httpResponse = await restClient.ExecutePostAsync<TokenModel>(restRequest);
-            // Validate Reponse Status Code
-            Assert.AreEqual(HttpStatusCode.OK, httpResponse.StatusCode, "Status Code is not OK");
-
-            // Get Token Data
-            var token = httpResponse.Data.Token;
-            #endregion
-            */
 
             var newBookingData = GenerateBooking.bookingData();
 
-
             BookingHelper bookingHelper = new BookingHelper();
-            var httpResponse = await bookingHelper.SendAsyncFunction(HttpClient, HttpMethod.Post, Endpoints.BookingEndpoint, newBookingData);
+            var httpResponse = await bookingHelper.SendAsyncFunction(HttpClient, HttpMethod.Post, Endpoints.BookingEndpoint, newBookingData, null);
             var statusCode = httpResponse.StatusCode;
             var httpResponseMessage = httpResponse.Content;
             var bookingResponseModel = JsonConvert.DeserializeObject<BookingResponseModel>(httpResponseMessage.ReadAsStringAsync().Result);
@@ -49,19 +32,100 @@ namespace HTTPClientTests.Tests
             Assert.AreEqual(HttpStatusCode.OK, statusCode, "Status code is not equal to 200 (OK).");
 
             //execute Get request and deserialize the response to be used for comparison later
-            var getResponse = await bookingHelper.GetAsyncFunction(HttpClient, HttpMethod.Get,$"{Endpoints.BookingEndpoint}/{bookingResponseModel.BookingId}", bookingResponseModel);
+            var getResponse = await bookingHelper.SendAsyncFunction(HttpClient, HttpMethod.Get, Endpoints.GetBookingById(bookingResponseModel.BookingId), null, bookingResponseModel);
             var responseBookingData = JsonConvert.DeserializeObject<BookingModel>(getResponse.Content.ReadAsStringAsync().Result);
 
             Assert.AreEqual(JsonConvert.SerializeObject(newBookingData), JsonConvert.SerializeObject(responseBookingData), "Booking data are not the same.");
 
         }
 
+        [TestMethod]
+        [TestCategory("HTTP Client Tests")]
+        public async Task TestUpdateBooking()
+        {
+
+            var newBookingData = GenerateBooking.bookingData();
+
+            BookingHelper bookingHelper = new BookingHelper();
+            var httpResponse = await bookingHelper.SendAsyncFunction(HttpClient, HttpMethod.Post, Endpoints.BookingEndpoint, newBookingData, null);
+            var statusCode = httpResponse.StatusCode;
+            var httpResponseMessage = httpResponse.Content;
+            var bookingResponseModel = JsonConvert.DeserializeObject<BookingResponseModel>(httpResponseMessage.ReadAsStringAsync().Result);
+
+            // Add data to cleanup list
+            CleanUpList.Add(bookingResponseModel);
+
+            Assert.AreEqual(HttpStatusCode.OK, statusCode, "Status code is not equal to 200 (OK).");
+
+            //Update the value of first and last name of booking data
+            newBookingData.Firstname = "TestUpdatedFirstName";
+            newBookingData.Lastname = "TestUpdatedLastName";
+
+            httpResponse = await bookingHelper.PutAsyncFunction(HttpClient, HttpMethod.Put, Endpoints.UpdateBookingDataById(bookingResponseModel.BookingId), newBookingData);
+            statusCode = httpResponse.StatusCode;
+            //httpResponseMessage = httpResponse.Content;
+            //bookingResponseModel = JsonConvert.DeserializeObject<BookingResponseModel>(httpResponseMessage.ReadAsStringAsync().Result);
+
+            Assert.AreEqual(HttpStatusCode.OK, statusCode, "Status code is not equal to 200 (OK).");
+
+            //execute Get request and deserialize the response to be used for comparison later
+            var getResponse = await bookingHelper.SendAsyncFunction(HttpClient, HttpMethod.Get, Endpoints.GetBookingById(bookingResponseModel.BookingId), null, bookingResponseModel);
+            var responseBookingData = JsonConvert.DeserializeObject<BookingModel>(getResponse.Content.ReadAsStringAsync().Result);
+
+            Assert.AreEqual(JsonConvert.SerializeObject(newBookingData), JsonConvert.SerializeObject(responseBookingData), "Booking data are not the same after update.");
+
+        }
+
+        [TestMethod]
+        [TestCategory("HTTP Client Tests")]
+        public async Task TestCreateAndDeleteBooking()
+        {
+
+            var newBookingData = GenerateBooking.bookingData();
+
+            BookingHelper bookingHelper = new BookingHelper();
+            var httpResponse = await bookingHelper.SendAsyncFunction(HttpClient, HttpMethod.Post, Endpoints.BookingEndpoint, newBookingData, null);
+            var statusCode = httpResponse.StatusCode;
+            var httpResponseMessage = httpResponse.Content;
+            var bookingResponseModel = JsonConvert.DeserializeObject<BookingResponseModel>(httpResponseMessage.ReadAsStringAsync().Result);
+
+            // Add data to cleanup list
+            CleanUpList.Add(bookingResponseModel);
+
+            Assert.AreEqual(HttpStatusCode.OK, statusCode, "Status code is not equal to 200 (OK).");
+
+            //delete the booking created
+            httpResponse = await bookingHelper.PutAsyncFunction(HttpClient, HttpMethod.Delete, Endpoints.DeleteBookingDataById(bookingResponseModel.BookingId), null);
+
+            //execute Get request and deserialize the response to be used for comparison later
+            statusCode = httpResponse.StatusCode;
+            Assert.AreEqual(HttpStatusCode.Created, statusCode, "Status code is not equal to 201 (Created).");
+
+        }
+
+        [TestMethod]
+        [TestCategory("HTTP Client Tests")]
+        
+        public async Task TestGetInvalidBookingId()
+        {
+            BookingHelper bookingHelper = new BookingHelper();
+            int invalidBookingId = -1;//
+            //execute Get request and deserialize the response to be used for comparison later
+            var getResponse = await bookingHelper.SendAsyncFunction(HttpClient, HttpMethod.Get, Endpoints.GetBookingById(invalidBookingId), null, null);
+
+            //execute Get request and deserialize the response to be used for comparison later
+            var statusCode = getResponse.StatusCode;
+            Assert.AreEqual(HttpStatusCode.NotFound, statusCode, "Status code is not equal to 401 (Not Found).");
+
+        }
+
         [TestCleanup]
         public async Task TestCleanUp()
         {
-            foreach (var cleanUp in CleanUpList)
+            BookingHelper bookingHelper = new BookingHelper();
+            foreach (var cleanUpData in CleanUpList)
             {
-               // var httpResponse = await HttpClient.DeleteAsync(Endpoints.GetURL($"{Endpoints.BookingEndpoint}/{cleanUp.BookingId}"));
+                var httpResponse = await bookingHelper.PutAsyncFunction(HttpClient, HttpMethod.Delete, Endpoints.DeleteBookingDataById(cleanUpData.BookingId), null);
             }
         }
     }
